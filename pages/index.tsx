@@ -14,7 +14,7 @@ const Home: NextPage = () => {
 
   const genResults = async () => {
     for (const bitCom of combinations.filter((c) => c & 1)) {
-      const url = await genSingleImgUrl(configLayers.reverse(), bitCom);
+      const url = await genSingleImgUrl(configLayers, bitCom);
       // const newResults = [...results, url];
       // setResults(newResults);
       setResults((old) => [...old, url]);
@@ -25,9 +25,6 @@ const Home: NextPage = () => {
     if (!folderResults) {
       return;
     }
-    // const { configLayers, combinations } = results;
-    // console.log("combinations", combinations);
-    // console.log("configLayers", configLayers);
     setCombinations(folderResults.combinations);
     setConfigLayers(folderResults.configLayers);
   };
@@ -42,6 +39,11 @@ const Home: NextPage = () => {
       <main className={styles.main}>
         <button onClick={handleGetFolder}>upload</button>
         <button onClick={genResults}>genImg</button>
+        {results.map((r, i) => (
+              <div key={i}>
+                <Image src={r} alt="" width={300} height={300}></Image>
+              </div>
+            ))}
       </main>
 
       <footer className={styles.footer}>
@@ -52,11 +54,7 @@ const Home: NextPage = () => {
         >
           Powered by{" "}
           <span className={styles.logo}>
-            {results.map((r, i) => (
-              <div key={i}>
-                <Image src={r} alt="" width={300} height={300}></Image>
-              </div>
-            ))}
+            
             {/* <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} /> */}
           </span>
         </a>

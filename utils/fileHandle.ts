@@ -1,14 +1,7 @@
 import { combineAllBitOr } from "./combineHelper";
-import {
-  AmountHandleType,
-  ConfigItem,
-  ConfigLayer,
-  ImgHandleType,
-} from "./interfaces";
+import { ConfigItem, ConfigLayer } from "./interfaces";
 
 export const getFolder = async () => {
-  const out1: ImgHandleType = {}; // store img file
-  const out2: AmountHandleType = {}; // store corresponding amount of img
   try {
     const dirHandle = await showDirectoryPicker();
     const configLayers = await await handleDirectoryEntry(dirHandle);

@@ -1,15 +1,3 @@
-export interface ImgHandleType {
-  [key: string]: {
-    [key: string]: File;
-  };
-}
-
-export interface AmountHandleType {
-  [key: string]: {
-    [key: string]: number;
-  };
-}
-
 export interface ConfigItem {
   source: File;
   bit: number;

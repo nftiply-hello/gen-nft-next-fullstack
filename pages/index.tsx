@@ -40,10 +40,10 @@ const Home: NextPage = () => {
         <button onClick={handleGetFolder}>upload</button>
         <button onClick={genResults}>genImg</button>
         {results.map((r, i) => (
-              <div key={i}>
-                <Image src={r} alt="" width={300} height={300}></Image>
-              </div>
-            ))}
+          <div key={i}>
+            <Image src={r} alt="" width={300} height={300}></Image>
+          </div>
+        ))}
       </main>
 
       <footer className={styles.footer}>
@@ -54,7 +54,6 @@ const Home: NextPage = () => {
         >
           Powered by{" "}
           <span className={styles.logo}>
-            
             {/* <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} /> */}
           </span>
         </a>

@@ -15,6 +15,7 @@ const Home: NextPage = () => {
   const [amountInfo, setAmountInfo] = useState<AmountInfo>();
 
   const genResults = async () => {
+    setResults([])
     for (const bitCom of combinations.filter((c) => c & 1)) {
       const url = await genSingleImgUrl(configLayers, bitCom);
       // const newResults = [...results, url];
@@ -31,11 +32,37 @@ const Home: NextPage = () => {
     setConfigLayers(folderResults.configLayers);
     setAmountInfo(folderResults.amountInfo);
   };
+  const changeLayOrder = (layIndex: number, isUp: Boolean) => {
+    setConfigLayers(oldCon => {
+      const newCon = [...oldCon]
+      const store = newCon[layIndex]
+      let switchIndex = 0
+      if (isUp) {
+        if(layIndex === newCon.length - 1) {
+          return newCon
+        }
+        switchIndex = layIndex + 1
+      } else {
+        if (layIndex === 0) {
+          return newCon
+        }
+        switchIndex = layIndex - 1
+      }
+      newCon[layIndex] = newCon[switchIndex]
+      newCon[switchIndex] = store
+      console.log('newCon', newCon)
+      return newCon
+    })
+  }
   const genConfigUi = () => {
     return configLayers.map((lay, layIndex) => {
       return (
         <div key={layIndex}>
-        <p>{lay.folder}</p>
+          <div>
+            <p>{lay.folder}</p>
+            <button onClick={()=>{changeLayOrder(layIndex, true)}}>down</button>
+            <button onClick={()=>{changeLayOrder(layIndex, false)}}>up</button>
+          </div>
           {lay.items.map((ite, otemIndex) => {
             return (
               <div key={otemIndex}>

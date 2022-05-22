@@ -4,16 +4,26 @@ import { ConfigItem, ConfigLayer } from "./interfaces";
 export const getFolder = async () => {
   try {
     const dirHandle = await showDirectoryPicker();
-    const configLayers = await await handleDirectoryEntry(dirHandle);
+    const configLayers = await handleDirectoryEntry(dirHandle);
     const itemBits = configLayers.map((cfl) => cfl.items.map((i) => i.bit));
     // + 1: for active status
     const combinations = combineAllBitOr(itemBits).map((item) => item + 1);
+    genAmountItem(configLayers, combinations.length)
     return { configLayers, combinations };
   } catch (error) {
     console.log("error in get Folfer: ", error);
     console.log("aborted");
   }
 };
+const genAmountItem = (configLayers: ConfigLayer[], combinationsNum: number) => {
+  configLayers.forEach(lay => {
+    const itemNum = lay.items.length
+    const amount = combinationsNum / itemNum
+    lay.items.forEach(ite => {
+      ite.amount = amount
+    })
+  })
+}
 const handleDirectoryEntry = async (dirHandle: FileSystemDirectoryHandle) => {
   let bitGen = 1;
   let out: ConfigLayer[] = [];
@@ -36,6 +46,7 @@ const handleDirectoryEntry = async (dirHandle: FileSystemDirectoryHandle) => {
         const fileItem: ConfigItem = {
           source: file,
           bit: bitGen,
+          amount: 0
         };
         cfgLayer.items.push(fileItem);
       }

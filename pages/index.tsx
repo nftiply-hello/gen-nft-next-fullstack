@@ -3,14 +3,16 @@ import Head from "next/head";
 import Image from "next/image";
 import { useState } from "react";
 import styles from "../styles/Home.module.css";
+import { changeAmountInfo, getCombinationChanges } from "../utils/combineHelper";
 import { getFolder } from "../utils/fileHandle";
 import { genSingleImgUrl } from "../utils/imgHelper";
-import { ConfigLayer } from "../utils/interfaces";
+import { AmountInfo, ConfigLayer } from "../utils/interfaces";
 
 const Home: NextPage = () => {
   const [results, setResults] = useState<string[]>([]);
   const [configLayers, setConfigLayers] = useState<ConfigLayer[]>([]);
   const [combinations, setCombinations] = useState<number[]>([]);
+  const [amountInfo, setAmountInfo] = useState<AmountInfo>();
 
   const genResults = async () => {
     for (const bitCom of combinations.filter((c) => c & 1)) {
@@ -27,7 +29,46 @@ const Home: NextPage = () => {
     }
     setCombinations(folderResults.combinations);
     setConfigLayers(folderResults.configLayers);
+    setAmountInfo(folderResults.amountInfo);
   };
+  const genConfigUi = () => {
+    return configLayers.map((lay, layIndex) => {
+      return (
+        <div key={layIndex}>
+        <p>{lay.folder}</p>
+          {lay.items.map((ite, otemIndex) => {
+            return (
+              <div key={otemIndex}>
+              <span>{ite.source.name}</span>
+              <input type="number" 
+              value={amountInfo ? amountInfo[ite.bit] : 0}
+              onChange={e => {adjustTraitAmount(ite.bit, amountInfo ? amountInfo[ite.bit] : 0,  Number(e.target.value))}}
+              />
+              </div>
+            )
+          })}
+        </div>
+      )
+    })
+  }
+  const adjustTraitAmount = (
+    bit: number,
+    oldAmount: number,
+    newAmount: number,
+  ) => {
+    const adjustAmount = newAmount - oldAmount
+    const {bitChange, combinations: newCombinations} = getCombinationChanges(
+      combinations,
+      bit,
+      adjustAmount
+    )
+    setAmountInfo(oldAmount => {
+      const newVal = changeAmountInfo({...oldAmount} || {}, bitChange, adjustAmount > 0)
+      console.log('newVal',  newVal)
+      return newVal
+    })
+    setCombinations(newCombinations)
+  }
   return (
     <div className={styles.container}>
       <Head>
@@ -39,6 +80,7 @@ const Home: NextPage = () => {
       <main className={styles.main}>
         <button onClick={handleGetFolder}>upload</button>
         <button onClick={genResults}>genImg</button>
+        {genConfigUi()}
         {results.map((r, i) => (
           <div key={i}>
             <Image src={r} alt="" width={300} height={300}></Image>

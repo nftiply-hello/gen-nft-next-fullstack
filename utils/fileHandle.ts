@@ -1,5 +1,5 @@
 import { combineAllBitOr } from "./combineHelper";
-import { ConfigItem, ConfigLayer } from "./interfaces";
+import { AmountInfo, ConfigItem, ConfigLayer } from "./interfaces";
 
 export const getFolder = async () => {
   try {
@@ -8,21 +8,23 @@ export const getFolder = async () => {
     const itemBits = configLayers.map((cfl) => cfl.items.map((i) => i.bit));
     // + 1: for active status
     const combinations = combineAllBitOr(itemBits).map((item) => item + 1);
-    genAmountItem(configLayers, combinations.length)
-    return { configLayers, combinations };
+    const amountInfo: AmountInfo = genAmount(configLayers, combinations.length)
+    return { configLayers, combinations, amountInfo };
   } catch (error) {
     console.log("error in get Folfer: ", error);
     console.log("aborted");
   }
 };
-const genAmountItem = (configLayers: ConfigLayer[], combinationsNum: number) => {
+const genAmount = (configLayers: ConfigLayer[], combinationsNum: number) => {
+  const result: AmountInfo = {}
   configLayers.forEach(lay => {
     const itemNum = lay.items.length
     const amount = combinationsNum / itemNum
     lay.items.forEach(ite => {
-      ite.amount = amount
+      result[ite.bit] = amount
     })
   })
+  return result
 }
 const handleDirectoryEntry = async (dirHandle: FileSystemDirectoryHandle) => {
   let bitGen = 1;
@@ -46,7 +48,6 @@ const handleDirectoryEntry = async (dirHandle: FileSystemDirectoryHandle) => {
         const fileItem: ConfigItem = {
           source: file,
           bit: bitGen,
-          amount: 0
         };
         cfgLayer.items.push(fileItem);
       }

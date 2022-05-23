@@ -1,14 +1,17 @@
-
-const genBitAmount = (num) => {
-    const arrGen = []
-    let i = 0
-    while((num>>>i)>0) {
-        const checkNum = 1<<i
-        if (num & checkNum) {
-            arrGen.push(checkNum)
-        }
-        i++
-    }
-    return arrGen
+const testSaveMulti = async () => {
+    const dirHandle = await showDirectoryPicker()
+    const jsonHandle = await dirHandle.getDirectoryHandle('json', { create: true })
+    const newfile = await jsonHandle.getFileHandle('newFile.json', { create: true })
+    await writeFile(newfile, 'ahuhuhuhuhu')
 }
-genBitAmount(11)
+
+async function writeFile(fileHandle, contents) {
+    // Create a FileSystemWritableFileStream to write to.
+    const writable = await fileHandle.createWritable();
+    // Write the contents of the file to the stream.
+    await writable.write(contents);
+    // Close the file and write the contents to disk.
+    await writable.close();
+}
+
+testSaveMulti()

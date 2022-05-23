@@ -9,9 +9,24 @@ export interface ConfigLayer {
 }
 
 export interface AmountInfo {
-  [key: number] : number
+  [key: number]: number;
 }
 
 export interface ChangeInfo {
-  [key: number] : number
+  [key: number]: number;
+}
+
+export interface JSONAttribute {
+  trait_type: string;
+  value: string;
+}
+
+export interface JSONMapping {
+  [key: number]: JSONAttribute;
+}
+
+export interface JSONOutputType {
+  name: string;
+  description: string;
+  attributes: JSONAttribute[];
 }

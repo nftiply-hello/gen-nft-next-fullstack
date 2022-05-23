@@ -1,22 +1,35 @@
 import mergeImages from "merge-images";
-import { ConfigItem, ConfigLayer } from "./interfaces";
+import {
+  ConfigItem,
+  ConfigLayer,
+  JSONMapping,
+  JSONOutputType,
+} from "./interfaces";
 
 export const genSingleImgUrl = async (
   configLayers: ConfigLayer[],
-  combination: number
+  combination: number,
+  jsonMapping: JSONMapping,
+  name: string,
+  description: string
 ) => {
   let lstUrl: string[] = [];
   let cfgItems: ConfigItem[] = [];
+  const metadataJson: JSONOutputType = {
+    name,
+    description,
+    attributes: [],
+  };
   for (const layer of configLayers) {
     for (const item of layer.items) {
       if (combination & item.bit) {
+        metadataJson.attributes.push(jsonMapping[item.bit]);
         lstUrl.push(URL.createObjectURL(item.source));
-        cfgItems.push(item)
+        cfgItems.push(item);
         break;
       }
     }
   }
-  console.log('cfgItems', cfgItems.map(ite => ite.source.name))
   const resultB64 = await mergeImages(lstUrl);
-  return resultB64;
+  return { url: resultB64, metadataJson };
 };

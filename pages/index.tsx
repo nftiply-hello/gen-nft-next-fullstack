@@ -3,24 +3,41 @@ import Head from "next/head";
 import Image from "next/image";
 import { useState } from "react";
 import styles from "../styles/Home.module.css";
-import { changeAmountInfo, getCombinationChanges } from "../utils/combineHelper";
-import { getFolder } from "../utils/fileHandle";
+import {
+  changeAmountInfo,
+  getCombinationChanges,
+} from "../utils/combineHelper";
+import { getFolder, saveResults } from "../utils/fileHandle";
 import { genSingleImgUrl } from "../utils/imgHelper";
-import { AmountInfo, ConfigLayer } from "../utils/interfaces";
+import { AmountInfo, ConfigLayer, JSONMapping } from "../utils/interfaces";
 
 const Home: NextPage = () => {
   const [results, setResults] = useState<string[]>([]);
+  const [resultsJson, setResultsJson] = useState<string[]>([]);
   const [configLayers, setConfigLayers] = useState<ConfigLayer[]>([]);
   const [combinations, setCombinations] = useState<number[]>([]);
   const [amountInfo, setAmountInfo] = useState<AmountInfo>();
+  const [jsonMapping, setJsonMapping] = useState<JSONMapping>();
+  const [baseName, setBaseName] = useState<string>("");
+  const [description, setDescription] = useState<string>("");
 
   const genResults = async () => {
-    setResults([])
-    for (const bitCom of combinations.filter((c) => c & 1)) {
-      const url = await genSingleImgUrl(configLayers, bitCom);
+    setResults([]);
+    setResultsJson([]);
+    const com2Gen = combinations.filter((c) => c & 1);
+    for (const index in com2Gen) {
+      const metaName = baseName + index;
+      const { url, metadataJson } = await genSingleImgUrl(
+        configLayers,
+        com2Gen[index],
+        jsonMapping || {},
+        metaName,
+        description
+      );
       // const newResults = [...results, url];
       // setResults(newResults);
       setResults((old) => [...old, url]);
+      setResultsJson((old) => [...old, JSON.stringify(metadataJson)]);
     }
   };
   const handleGetFolder = async () => {
@@ -31,71 +48,97 @@ const Home: NextPage = () => {
     setCombinations(folderResults.combinations);
     setConfigLayers(folderResults.configLayers);
     setAmountInfo(folderResults.amountInfo);
+    setJsonMapping(folderResults.jsonMapping);
   };
   const changeLayOrder = (layIndex: number, isUp: Boolean) => {
-    setConfigLayers(oldCon => {
-      const newCon = [...oldCon]
-      const store = newCon[layIndex]
-      let switchIndex = 0
+    setConfigLayers((oldCon) => {
+      const newCon = [...oldCon];
+      const store = newCon[layIndex];
+      let switchIndex = 0;
       if (isUp) {
-        if(layIndex === newCon.length - 1) {
-          return newCon
+        if (layIndex === newCon.length - 1) {
+          return newCon;
         }
-        switchIndex = layIndex + 1
+        switchIndex = layIndex + 1;
       } else {
         if (layIndex === 0) {
-          return newCon
+          return newCon;
         }
-        switchIndex = layIndex - 1
+        switchIndex = layIndex - 1;
       }
-      newCon[layIndex] = newCon[switchIndex]
-      newCon[switchIndex] = store
-      console.log('newCon', newCon)
-      return newCon
-    })
-  }
+      newCon[layIndex] = newCon[switchIndex];
+      newCon[switchIndex] = store;
+      console.log("newCon", newCon);
+      return newCon;
+    });
+  };
   const genConfigUi = () => {
     return configLayers.map((lay, layIndex) => {
       return (
         <div key={layIndex}>
           <div>
             <p>{lay.folder}</p>
-            <button onClick={()=>{changeLayOrder(layIndex, true)}}>down</button>
-            <button onClick={()=>{changeLayOrder(layIndex, false)}}>up</button>
+            <button
+              onClick={() => {
+                changeLayOrder(layIndex, true);
+              }}
+            >
+              down
+            </button>
+            <button
+              onClick={() => {
+                changeLayOrder(layIndex, false);
+              }}
+            >
+              up
+            </button>
           </div>
           {lay.items.map((ite, otemIndex) => {
             return (
               <div key={otemIndex}>
-              <span>{ite.source.name}</span>
-              <input type="number" 
-              value={amountInfo ? amountInfo[ite.bit] : 0}
-              onChange={e => {adjustTraitAmount(ite.bit, amountInfo ? amountInfo[ite.bit] : 0,  Number(e.target.value))}}
-              />
+                <span>{ite.source.name}</span>
+                <input
+                  type="number"
+                  value={amountInfo ? amountInfo[ite.bit] : 0}
+                  onChange={(e) => {
+                    adjustTraitAmount(
+                      ite.bit,
+                      amountInfo ? amountInfo[ite.bit] : 0,
+                      Number(e.target.value)
+                    );
+                  }}
+                />
               </div>
-            )
+            );
           })}
         </div>
-      )
-    })
-  }
+      );
+    });
+  };
   const adjustTraitAmount = (
     bit: number,
     oldAmount: number,
-    newAmount: number,
+    newAmount: number
   ) => {
-    const adjustAmount = newAmount - oldAmount
-    const {bitChange, combinations: newCombinations} = getCombinationChanges(
+    const adjustAmount = newAmount - oldAmount;
+    const { bitChange, combinations: newCombinations } = getCombinationChanges(
       combinations,
       bit,
       adjustAmount
-    )
-    setAmountInfo(oldAmount => {
-      const newVal = changeAmountInfo({...oldAmount} || {}, bitChange, adjustAmount > 0)
-      console.log('newVal',  newVal)
-      return newVal
-    })
-    setCombinations(newCombinations)
-  }
+    );
+    setAmountInfo((oldAmount) => {
+      const newVal = changeAmountInfo(
+        { ...oldAmount } || {},
+        bitChange,
+        adjustAmount > 0
+      );
+      return newVal;
+    });
+    setCombinations(newCombinations);
+  };
+  const handleSaveResults = async () => {
+    saveResults(results, resultsJson);
+  };
   return (
     <div className={styles.container}>
       <Head>
@@ -105,8 +148,25 @@ const Home: NextPage = () => {
       </Head>
 
       <main className={styles.main}>
+        <span>Base name</span>
+        <input
+          type="text"
+          value={baseName}
+          onChange={(e) => {
+            setBaseName(e.target.value);
+          }}
+        />
+        <span>Description</span>
+        <input
+          type="text"
+          value={description}
+          onChange={(e) => {
+            setDescription(e.target.value);
+          }}
+        />
         <button onClick={handleGetFolder}>upload</button>
         <button onClick={genResults}>genImg</button>
+        <button onClick={handleSaveResults}>save Result</button>
         {genConfigUi()}
         {results.map((r, i) => (
           <div key={i}>

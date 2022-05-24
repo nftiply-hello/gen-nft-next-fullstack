@@ -4,8 +4,9 @@ import Image from "next/image";
 import { useState } from "react";
 import styles from "../styles/Home.module.css";
 import {
+  adjustTotalSupply,
+  adjustTraitAmount,
   changeAmountInfo,
-  getCombinationChanges,
 } from "../utils/combineHelper";
 import { getFolder, saveResults } from "../utils/fileHandle";
 import { genSingleImgUrl } from "../utils/imgHelper";
@@ -49,6 +50,9 @@ const Home: NextPage = () => {
     setConfigLayers(folderResults.configLayers);
     setAmountInfo(folderResults.amountInfo);
     setJsonMapping(folderResults.jsonMapping);
+  };
+  const getTotalSupply = () => {
+    return combinations.filter((com) => com & 1).length;
   };
   const changeLayOrder = (layIndex: number, isUp: Boolean) => {
     setConfigLayers((oldCon) => {
@@ -101,7 +105,7 @@ const Home: NextPage = () => {
                   type="number"
                   value={amountInfo ? amountInfo[ite.bit] : 0}
                   onChange={(e) => {
-                    adjustTraitAmount(
+                    handleAdjustTraitAmount(
                       ite.bit,
                       amountInfo ? amountInfo[ite.bit] : 0,
                       Number(e.target.value)
@@ -115,23 +119,31 @@ const Home: NextPage = () => {
       );
     });
   };
-  const adjustTraitAmount = (
+  const handleAdjustTotalSupply = (newVal: number, oldVal: number) => {
+    const { combinations: newCombinations, changeInfo } = adjustTotalSupply(
+      newVal - oldVal,
+      combinations
+    );
+    setCombinations(newCombinations);
+    setAmountInfo((oldAmount) => {
+      const newVal = changeAmountInfo({ ...oldAmount } || {}, changeInfo);
+      return newVal;
+    });
+  };
+
+  const handleAdjustTraitAmount = (
     bit: number,
     oldAmount: number,
     newAmount: number
   ) => {
     const adjustAmount = newAmount - oldAmount;
-    const { bitChange, combinations: newCombinations } = getCombinationChanges(
+    const { bitChange, combinations: newCombinations } = adjustTraitAmount(
       combinations,
       bit,
       adjustAmount
     );
     setAmountInfo((oldAmount) => {
-      const newVal = changeAmountInfo(
-        { ...oldAmount } || {},
-        bitChange,
-        adjustAmount > 0
-      );
+      const newVal = changeAmountInfo({ ...oldAmount } || {}, bitChange);
       return newVal;
     });
     setCombinations(newCombinations);
@@ -148,6 +160,14 @@ const Home: NextPage = () => {
       </Head>
 
       <main className={styles.main}>
+        <span>Total suply</span>
+        <input
+          type="number"
+          value={getTotalSupply()}
+          onChange={(e) => {
+            handleAdjustTotalSupply(Number(e.target.value), getTotalSupply());
+          }}
+        />
         <span>Base name</span>
         <input
           type="text"

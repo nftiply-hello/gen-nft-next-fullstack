@@ -26,7 +26,7 @@ export const genSingleImgUrl = async (
     for (const item of layer.items) {
       if (combination & item.bit) {
         metadataJson.attributes.push(jsonMapping[item.bit]);
-        lstUrl.push(URL.createObjectURL(item.source));
+        lstUrl.push(item.url);
         cfgItems.push(item);
         break;
       }

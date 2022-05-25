@@ -58,14 +58,16 @@ const handleDirectoryEntry = async (dirHandle: FileSystemDirectoryHandle) => {
     for await (const imgEntry of folderHandle.values()) {
       if (imgEntry.kind === "file") {
         const file = await imgEntry.getFile();
+        const fileName = file.name.substring(0, file.name.lastIndexOf("."));
         bitGen = bitGen * 2;
         const fileItem: ConfigItem = {
-          source: file,
+          name: fileName,
+          url: URL.createObjectURL(file),
           bit: bitGen,
         };
         jsonMapping[bitGen] = {
           trait_type: folderEntry.name,
-          value: file.name.substring(0, file.name.lastIndexOf(".")),
+          value: fileName,
         };
         cfgLayer.items.push(fileItem);
       }

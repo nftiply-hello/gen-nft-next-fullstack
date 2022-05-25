@@ -146,15 +146,16 @@ const Home: NextPage = () => {
               up
             </button>
           </div>
-          {lay.items.map((ite, otemIndex) => {
+          {lay.items.map((ite, itemIndex) => {
             return (
-              <div key={otemIndex}>
+              <div key={itemIndex}>
+                <Image src={ite.url} alt="" width={50} height={50}></Image>
                 <span
                   onClick={() => {
                     handleSetPreview(lay.folder, ite.bit);
                   }}
                 >
-                  {ite.source.name}
+                  {ite.name}
                 </span>
                 <input
                   type="number"

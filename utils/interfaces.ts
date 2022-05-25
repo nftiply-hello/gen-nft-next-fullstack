@@ -1,5 +1,6 @@
 export interface ConfigItem {
-  source: File;
+  name: string;
+  url: string;
   bit: number;
 }
 

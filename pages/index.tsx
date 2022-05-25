@@ -126,6 +126,7 @@ const Home: NextPage = () => {
     }
   };
   const genConfigUi = () => {
+    const layLen = configLayers.length;
     return configLayers.map((lay, layIndex) => {
       return (
         <div key={layIndex}>
@@ -135,6 +136,7 @@ const Home: NextPage = () => {
               onClick={() => {
                 changeLayOrder(layIndex, true);
               }}
+              disabled={layIndex === layLen - 1}
             >
               down
             </button>
@@ -142,6 +144,7 @@ const Home: NextPage = () => {
               onClick={() => {
                 changeLayOrder(layIndex, false);
               }}
+              disabled={layIndex === 0}
             >
               up
             </button>
@@ -155,7 +158,14 @@ const Home: NextPage = () => {
                     handleSetPreview(lay.folder, ite.bit);
                   }}
                 >
-                  {ite.name}
+                  {ite.name}:{" "}
+                  {amountInfo &&
+                    Number(
+                      ((amountInfo[ite.bit] / getTotalSupply()) * 100).toFixed(
+                        2
+                      )
+                    )}{" "}
+                  %
                 </span>
                 <input
                   type="number"
@@ -257,8 +267,15 @@ const Home: NextPage = () => {
           }}
         />
         <button onClick={handleGetFolder}>upload</button>
-        <button onClick={genResults}>genImg</button>
-        <button onClick={handleSaveResults}>save Result</button>
+        <button onClick={genResults} disabled={configLayers.length === 0}>
+          genImg
+        </button>
+        <button
+          onClick={handleSaveResults}
+          disabled={results.length === 0 || resultsJson.length === 0}
+        >
+          save Result
+        </button>
         {genPreviewImg()}
         {genConfigUi()}
         {results.map((r, i) => (

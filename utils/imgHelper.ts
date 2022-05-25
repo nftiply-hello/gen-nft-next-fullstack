@@ -11,7 +11,9 @@ export const genSingleImgUrl = async (
   combination: number,
   jsonMapping: JSONMapping,
   name: string,
-  description: string
+  description: string,
+  width: number,
+  height: number
 ) => {
   let lstUrl: string[] = [];
   let cfgItems: ConfigItem[] = [];
@@ -30,6 +32,6 @@ export const genSingleImgUrl = async (
       }
     }
   }
-  const resultB64 = await mergeImages(lstUrl);
+  const resultB64 = await mergeImages(lstUrl, { width, height });
   return { url: resultB64, metadataJson };
 };

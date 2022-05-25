@@ -21,6 +21,8 @@ const Home: NextPage = () => {
   const [jsonMapping, setJsonMapping] = useState<JSONMapping>();
   const [baseName, setBaseName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
+  const [width, setWidth] = useState<number>(0);
+  const [height, setHeight] = useState<number>(0);
 
   const genResults = async () => {
     setResults([]);
@@ -33,7 +35,9 @@ const Home: NextPage = () => {
         com2Gen[index],
         jsonMapping || {},
         metaName,
-        description
+        description,
+        width,
+        height
       );
       // const newResults = [...results, url];
       // setResults(newResults);
@@ -182,6 +186,22 @@ const Home: NextPage = () => {
           value={description}
           onChange={(e) => {
             setDescription(e.target.value);
+          }}
+        />
+        <span>Width</span>
+        <input
+          type="number"
+          value={width}
+          onChange={(e) => {
+            setWidth(Number(e.target.value));
+          }}
+        />
+        <span>Height</span>
+        <input
+          type="number"
+          value={height}
+          onChange={(e) => {
+            setHeight(Number(e.target.value));
           }}
         />
         <button onClick={handleGetFolder}>upload</button>

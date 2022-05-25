@@ -1,6 +1,13 @@
+import _ from "lodash";
 import { combineAllBitOr } from "./combineHelper";
 import { IMAGES_OUT_DIR, JSON_OUT_DIR } from "./constants";
-import { AmountInfo, ConfigItem, ConfigLayer, JSONMapping } from "./interfaces";
+import {
+  AmountInfo,
+  ConfigItem,
+  ConfigLayer,
+  JSONMapping,
+  PreviewInfo,
+} from "./interfaces";
 
 export const getFolder = async () => {
   try {
@@ -10,7 +17,12 @@ export const getFolder = async () => {
     // + 1: for active status
     const combinations = combineAllBitOr(itemBits).map((item) => item + 1);
     const amountInfo: AmountInfo = genAmount(configLayers, combinations.length);
-    return { configLayers, combinations, amountInfo, jsonMapping };
+    const previewInfo: PreviewInfo = {};
+    configLayers.forEach((lay) => {
+      const bit = _.sample(lay.items.map((ite) => ite.bit)) || 0;
+      previewInfo[lay.folder] = bit;
+    });
+    return { configLayers, combinations, amountInfo, jsonMapping, previewInfo };
   } catch (error) {
     console.log("error in get Folfer: ", error);
     console.log("aborted");

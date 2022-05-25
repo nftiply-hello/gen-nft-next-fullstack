@@ -1,7 +1,8 @@
+import _ from "lodash";
 import type { NextPage } from "next";
 import Head from "next/head";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "../styles/Home.module.css";
 import {
   adjustTotalSupply,
@@ -10,7 +11,12 @@ import {
 } from "../utils/combineHelper";
 import { getFolder, saveResults } from "../utils/fileHandle";
 import { genSingleImgUrl } from "../utils/imgHelper";
-import { AmountInfo, ConfigLayer, JSONMapping } from "../utils/interfaces";
+import {
+  AmountInfo,
+  ConfigLayer,
+  JSONMapping,
+  PreviewInfo,
+} from "../utils/interfaces";
 
 const Home: NextPage = () => {
   const [results, setResults] = useState<string[]>([]);
@@ -19,10 +25,12 @@ const Home: NextPage = () => {
   const [combinations, setCombinations] = useState<number[]>([]);
   const [amountInfo, setAmountInfo] = useState<AmountInfo>();
   const [jsonMapping, setJsonMapping] = useState<JSONMapping>();
+  const [previewInfo, setPreviewInfo] = useState<PreviewInfo>();
+  const [previewUrl, setPreviewUrl] = useState<string>("");
   const [baseName, setBaseName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
-  const [width, setWidth] = useState<number>(0);
-  const [height, setHeight] = useState<number>(0);
+  const [width, setWidth] = useState<number>(512);
+  const [height, setHeight] = useState<number>(512);
 
   const genResults = async () => {
     setResults([]);
@@ -46,6 +54,7 @@ const Home: NextPage = () => {
     }
   };
   const handleGetFolder = async () => {
+    setPreviewUrl("");
     const folderResults = await getFolder();
     if (!folderResults) {
       return;
@@ -54,7 +63,14 @@ const Home: NextPage = () => {
     setConfigLayers(folderResults.configLayers);
     setAmountInfo(folderResults.amountInfo);
     setJsonMapping(folderResults.jsonMapping);
+    setPreviewInfo(folderResults.previewInfo);
+    // await handleSetPreviewUrl(folderResults.previewInfo);
   };
+  useEffect(() => {
+    handleSetPreviewUrl();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [previewInfo, configLayers]);
+
   const getTotalSupply = () => {
     return combinations.filter((com) => com & 1).length;
   };
@@ -80,6 +96,35 @@ const Home: NextPage = () => {
       return newCon;
     });
   };
+  const handleSetPreview = async (folder: string, bit: number) => {
+    setPreviewInfo((old) => ({
+      ...old,
+      [folder]: bit,
+    }));
+  };
+  const handleSetPreviewUrl = async () => {
+    const comPre = _.sum(Object.values(previewInfo || {}));
+    const { url } = await genSingleImgUrl(
+      configLayers,
+      comPre,
+      jsonMapping || {},
+      baseName,
+      description,
+      width,
+      height
+    );
+    setPreviewUrl(url);
+  };
+  const genPreviewImg = () => {
+    if (previewUrl.length > 0) {
+      return (
+        <>
+          <span>Preview Img</span>
+          <Image src={previewUrl} alt="" width={300} height={300}></Image>
+        </>
+      );
+    }
+  };
   const genConfigUi = () => {
     return configLayers.map((lay, layIndex) => {
       return (
@@ -104,7 +149,13 @@ const Home: NextPage = () => {
           {lay.items.map((ite, otemIndex) => {
             return (
               <div key={otemIndex}>
-                <span>{ite.source.name}</span>
+                <span
+                  onClick={() => {
+                    handleSetPreview(lay.folder, ite.bit);
+                  }}
+                >
+                  {ite.source.name}
+                </span>
                 <input
                   type="number"
                   value={amountInfo ? amountInfo[ite.bit] : 0}
@@ -207,11 +258,10 @@ const Home: NextPage = () => {
         <button onClick={handleGetFolder}>upload</button>
         <button onClick={genResults}>genImg</button>
         <button onClick={handleSaveResults}>save Result</button>
+        {genPreviewImg()}
         {genConfigUi()}
         {results.map((r, i) => (
-          <div key={i}>
-            <Image src={r} alt="" width={300} height={300}></Image>
-          </div>
+          <Image key={i} src={r} alt="" width={300} height={300}></Image>
         ))}
       </main>
 
@@ -221,10 +271,7 @@ const Home: NextPage = () => {
           target="_blank"
           rel="noopener noreferrer"
         >
-          Powered by{" "}
-          <span className={styles.logo}>
-            {/* <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} /> */}
-          </span>
+          Powered by <span className={styles.logo}></span>
         </a>
       </footer>
     </div>

@@ -25,6 +25,10 @@ export interface JSONMapping {
   [key: number]: JSONAttribute;
 }
 
+export interface PreviewInfo {
+  [key: string]: number;
+}
+
 export interface JSONOutputType {
   name: string;
   description: string;

@@ -1,4 +1,14 @@
-import { Button, Col, Input, Progress, Row } from "antd";
+import {
+  Avatar,
+  Button,
+  Col,
+  Collapse,
+  Input,
+  List,
+  Progress,
+  Row,
+} from "antd";
+const { Panel } = Collapse;
 import _ from "lodash";
 import type { NextPage } from "next";
 import Head from "next/head";
@@ -21,7 +31,7 @@ import {
 
 const Home: NextPage = () => {
   const [results, setResults] = useState<string[]>([]);
-  const [resultsJson, setResultsJson] = useState<string[]>([]);
+  const [, setResultsJson] = useState<string[]>([]);
   const [configLayers, setConfigLayers] = useState<ConfigLayer[]>([]);
   const [combinations, setCombinations] = useState<number[]>([]);
   const [amountInfo, setAmountInfo] = useState<AmountInfo>();
@@ -124,66 +134,28 @@ const Home: NextPage = () => {
       );
     }
   };
-  const genConfigUi = () => {
-    const layLen = configLayers.length;
-    return configLayers.map((lay, layIndex) => {
-      return (
-        <div key={layIndex}>
-          <div>
-            <p>{lay.folder}</p>
-            <button
-              onClick={() => {
-                changeLayOrder(layIndex, true);
-              }}
-              disabled={layIndex === layLen - 1}
-            >
-              down
-            </button>
-            <button
-              onClick={() => {
-                changeLayOrder(layIndex, false);
-              }}
-              disabled={layIndex === 0}
-            >
-              up
-            </button>
-          </div>
-          {lay.items.map((ite, itemIndex) => {
-            return (
-              <div key={itemIndex}>
-                <Image src={ite.url} alt="" width={50} height={50}></Image>
-                <Button
-                  onClick={() => {
-                    handleSetPreview(lay.folder, ite.bit);
-                  }}
-                >
-                  {ite.name}:{" "}
-                  {amountInfo &&
-                    Number(
-                      ((amountInfo[ite.bit] / getTotalSupply()) * 100).toFixed(
-                        2
-                      )
-                    )}{" "}
-                  %
-                </Button>
-                <input
-                  type="number"
-                  value={amountInfo ? amountInfo[ite.bit] : 0}
-                  onChange={(e) => {
-                    handleAdjustTraitAmount(
-                      ite.bit,
-                      amountInfo ? amountInfo[ite.bit] : 0,
-                      Number(e.target.value)
-                    );
-                  }}
-                />
-              </div>
-            );
-          })}
-        </div>
-      );
-    });
-  };
+  const genExtra = (layLen: number, layIndex: number) => (
+    <>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          changeLayOrder(layIndex, true);
+        }}
+        disabled={layIndex === layLen - 1}
+      >
+        down
+      </button>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          changeLayOrder(layIndex, false);
+        }}
+        disabled={layIndex === 0}
+      >
+        up
+      </button>
+    </>
+  );
   const handleAdjustTotalSupply = (newVal: number, oldVal: number) => {
     const { combinations: newCombinations, changeInfo } = adjustTotalSupply(
       newVal - oldVal,
@@ -195,7 +167,6 @@ const Home: NextPage = () => {
       return newVal;
     });
   };
-
   const handleAdjustTraitAmount = (
     bit: number,
     oldAmount: number,
@@ -212,6 +183,76 @@ const Home: NextPage = () => {
       return newVal;
     });
     setCombinations(newCombinations);
+  };
+  const genConfigUi = () => {
+    const layLen = configLayers.length;
+    if (layLen === 0) {
+      return;
+    }
+    const ui = (
+      <Collapse
+        defaultActiveKey={Array(layLen)
+          .fill(1)
+          .map((_, index) => index.toString())}
+      >
+        {configLayers.map((lay, layIndex) => {
+          const getListItemStyle = (bit: number) => {
+            let listItemStyle = {};
+            if (previewInfo && previewInfo[lay.folder] === bit) {
+              listItemStyle = { border: "2px solid #1890ff" };
+            }
+            return listItemStyle;
+          };
+          return (
+            <Panel
+              header={lay.folder}
+              key={layIndex}
+              extra={genExtra(layLen, layIndex)}
+            >
+              <List
+                grid={{ gutter: 16, column: 4 }}
+                dataSource={lay.items}
+                renderItem={(item) => (
+                  <List.Item
+                    style={getListItemStyle(item.bit)}
+                    onClick={() => handleSetPreview(lay.folder, item.bit)}
+                    color="green"
+                  >
+                    <List.Item.Meta
+                      avatar={<Avatar src={item.url} />}
+                      title={item.name}
+                      description={
+                        amountInfo &&
+                        Number(
+                          (
+                            (amountInfo[item.bit] / getTotalSupply()) *
+                            100
+                          ).toFixed(2)
+                        ) +
+                          " " +
+                          "%"
+                      }
+                    />
+                    <Input
+                      type="number"
+                      value={amountInfo ? amountInfo[item.bit] : 0}
+                      onChange={(e) => {
+                        handleAdjustTraitAmount(
+                          item.bit,
+                          amountInfo ? amountInfo[item.bit] : 0,
+                          Number(e.target.value)
+                        );
+                      }}
+                    />
+                  </List.Item>
+                )}
+              />
+            </Panel>
+          );
+        })}
+      </Collapse>
+    );
+    return ui;
   };
   return (
     <div className={styles.container}>

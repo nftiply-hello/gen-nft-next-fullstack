@@ -9,7 +9,7 @@ import {
   adjustTraitAmount,
   changeAmountInfo,
 } from "../utils/combineHelper";
-import { getFolder, saveResults } from "../utils/fileHandle";
+import { genResult, getFolder } from "../utils/fileHandle";
 import { genSingleImgUrl } from "../utils/imgHelper";
 import {
   AmountInfo,
@@ -33,28 +33,23 @@ const Home: NextPage = () => {
   const [height, setHeight] = useState<number>(512);
   const [generating, setGenerating] = useState<boolean>(false);
 
-  const genResults = async () => {
+  const handleGenResults = async () => {
     setResults([]);
     setResultsJson([]);
-    const com2Gen = combinations.filter((c) => c & 1);
     setGenerating(true);
-    for (const index in com2Gen) {
-      const metaName = baseName + index;
-      const { url, metadataJson } = await genSingleImgUrl(
-        configLayers,
-        com2Gen[index],
-        jsonMapping || {},
-        metaName,
-        description,
-        width,
-        height
-      );
-      // const newResults = [...results, url];
-      // setResults(newResults);
-      setResults((old) => [...old, url]);
-      setResultsJson((old) => [...old, JSON.stringify(metadataJson)]);
-    }
+    const { urlResults, jsonResults } = await genResult(
+      combinations,
+      baseName,
+      description,
+      configLayers,
+      jsonMapping || {},
+      width,
+      height
+    );
+    setResults(urlResults);
+    setResultsJson(jsonResults);
     setGenerating(false);
+    alert("Congratulation! Your metadata saved successfully");
   };
   const handleGetFolder = async () => {
     setPreviewUrl("");
@@ -218,10 +213,6 @@ const Home: NextPage = () => {
     });
     setCombinations(newCombinations);
   };
-  const handleSaveResults = async () => {
-    await saveResults(results, resultsJson);
-    alert("Congratulation! Your metadata saved successfully");
-  };
   return (
     <div className={styles.container}>
       <Head>
@@ -272,16 +263,11 @@ const Home: NextPage = () => {
           }}
         />
         <button onClick={handleGetFolder}>upload</button>
-        <button onClick={genResults} disabled={configLayers.length === 0}>
-          genImg
-        </button>
         <button
-          onClick={handleSaveResults}
-          disabled={
-            generating || results.length === 0 || resultsJson.length === 0
-          }
+          onClick={handleGenResults}
+          disabled={generating || configLayers.length === 0}
         >
-          save Result
+          genImg
         </button>
         {genPreviewImg()}
         {genConfigUi()}

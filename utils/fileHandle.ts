@@ -1,6 +1,7 @@
 import _ from "lodash";
 import { combineAllBitOr } from "./combineHelper";
 import { IMAGES_OUT_DIR, JSON_OUT_DIR } from "./constants";
+import { genSingleImgUrl } from "./imgHelper";
 import {
   AmountInfo,
   ConfigItem,
@@ -8,6 +9,7 @@ import {
   JSONMapping,
   PreviewInfo,
 } from "./interfaces";
+import { genPadNum } from "./numberHelper";
 
 export const getFolder = async () => {
   try {
@@ -77,7 +79,15 @@ const handleDirectoryEntry = async (dirHandle: FileSystemDirectoryHandle) => {
   return { configLayers: out, jsonMapping };
 };
 
-export const saveResults = async (urls: string[], jsons: string[]) => {
+export const genResult = async (
+  combinations: number[],
+  baseName: string,
+  description: string,
+  configLayers: ConfigLayer[],
+  jsonMapping: JSONMapping,
+  width: number,
+  height: number
+) => {
   const outputDir = await showDirectoryPicker();
   const imgsHandle = await outputDir.getDirectoryHandle(IMAGES_OUT_DIR, {
     create: true,
@@ -85,21 +95,36 @@ export const saveResults = async (urls: string[], jsons: string[]) => {
   const jsonshandle = await outputDir.getDirectoryHandle(JSON_OUT_DIR, {
     create: true,
   });
-  const padNum = (urls.length - 1).toString().length;
-  for (const index in urls) {
-    const fileName = `${index.toString().padStart(padNum, "0")}.png`;
-    const newFile = await imgsHandle.getFileHandle(fileName, {
+  const urlResults: string[] = [];
+  const jsonResults: string[] = [];
+  const com2Gen = combinations.filter((c) => c & 1);
+  const padNum = genPadNum(com2Gen.length);
+  for (const index in com2Gen) {
+    const metaName = baseName + index;
+    const { url, metadataJson } = await genSingleImgUrl(
+      configLayers,
+      com2Gen[index],
+      jsonMapping || {},
+      metaName,
+      description,
+      width,
+      height
+    );
+    const jsonString = JSON.stringify(metadataJson);
+    const imgName = `${index.toString().padStart(padNum, "0")}.png`;
+    const imgFile = await imgsHandle.getFileHandle(imgName, {
       create: true,
     });
-    await writeURLToFile(newFile, urls[index]);
-  }
-  for (const index in jsons) {
-    const fileName = `${index.toString().padStart(padNum, "0")}.json`;
-    const newFile = await jsonshandle.getFileHandle(fileName, {
+    await writeURLToFile(imgFile, url);
+    const jsonName = `${index.toString().padStart(padNum, "0")}.json`;
+    const jsonFile = await jsonshandle.getFileHandle(jsonName, {
       create: true,
     });
-    await writeFile(newFile, jsons[index]);
+    await writeFile(jsonFile, jsonString);
+    urlResults.push(url);
+    jsonResults.push(jsonString);
   }
+  return { urlResults, jsonResults };
 };
 
 const writeFile = async (

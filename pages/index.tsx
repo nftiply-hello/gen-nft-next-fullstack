@@ -31,11 +31,13 @@ const Home: NextPage = () => {
   const [description, setDescription] = useState<string>("");
   const [width, setWidth] = useState<number>(512);
   const [height, setHeight] = useState<number>(512);
+  const [generating, setGenerating] = useState<boolean>(false);
 
   const genResults = async () => {
     setResults([]);
     setResultsJson([]);
     const com2Gen = combinations.filter((c) => c & 1);
+    setGenerating(true);
     for (const index in com2Gen) {
       const metaName = baseName + index;
       const { url, metadataJson } = await genSingleImgUrl(
@@ -52,6 +54,7 @@ const Home: NextPage = () => {
       setResults((old) => [...old, url]);
       setResultsJson((old) => [...old, JSON.stringify(metadataJson)]);
     }
+    setGenerating(false);
   };
   const handleGetFolder = async () => {
     setPreviewUrl("");
@@ -64,7 +67,6 @@ const Home: NextPage = () => {
     setAmountInfo(folderResults.amountInfo);
     setJsonMapping(folderResults.jsonMapping);
     setPreviewInfo(folderResults.previewInfo);
-    // await handleSetPreviewUrl(folderResults.previewInfo);
   };
   useEffect(() => {
     handleSetPreviewUrl();
@@ -103,6 +105,7 @@ const Home: NextPage = () => {
     }));
   };
   const handleSetPreviewUrl = async () => {
+    if (configLayers.length === 0) return;
     const comPre = _.sum(Object.values(previewInfo || {}));
     const { url } = await genSingleImgUrl(
       configLayers,
@@ -121,6 +124,7 @@ const Home: NextPage = () => {
         <>
           <span>Preview Img</span>
           <Image src={previewUrl} alt="" width={300} height={300}></Image>
+          <span>Preview Img</span>
         </>
       );
     }
@@ -215,7 +219,8 @@ const Home: NextPage = () => {
     setCombinations(newCombinations);
   };
   const handleSaveResults = async () => {
-    saveResults(results, resultsJson);
+    await saveResults(results, resultsJson);
+    alert("Congratulation! Your metadata saved successfully");
   };
   return (
     <div className={styles.container}>
@@ -272,7 +277,9 @@ const Home: NextPage = () => {
         </button>
         <button
           onClick={handleSaveResults}
-          disabled={results.length === 0 || resultsJson.length === 0}
+          disabled={
+            generating || results.length === 0 || resultsJson.length === 0
+          }
         >
           save Result
         </button>

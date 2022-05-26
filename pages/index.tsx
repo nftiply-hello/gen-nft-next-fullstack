@@ -1,3 +1,4 @@
+import { Progress } from "antd";
 import _ from "lodash";
 import type { NextPage } from "next";
 import Head from "next/head";
@@ -32,10 +33,9 @@ const Home: NextPage = () => {
   const [width, setWidth] = useState<number>(512);
   const [height, setHeight] = useState<number>(512);
   const [generating, setGenerating] = useState<boolean>(false);
+  const [percentProgress, setPercentProgress] = useState<number>(0);
 
   const handleGenResults = async () => {
-    setResults([]);
-    setResultsJson([]);
     setGenerating(true);
     const { urlResults, jsonResults } = await genResult(
       combinations,
@@ -44,7 +44,8 @@ const Home: NextPage = () => {
       configLayers,
       jsonMapping || {},
       width,
-      height
+      height,
+      setPercentProgress
     );
     setResults(urlResults);
     setResultsJson(jsonResults);
@@ -269,6 +270,13 @@ const Home: NextPage = () => {
         >
           genImg
         </button>
+        <Progress
+          strokeColor={{
+            "0%": "#108ee9",
+            "100%": "#87d068",
+          }}
+          percent={percentProgress}
+        />
         {genPreviewImg()}
         {genConfigUi()}
         {results.map((r, i) => (

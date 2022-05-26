@@ -1,4 +1,5 @@
 import _ from "lodash";
+import { Dispatch, SetStateAction } from "react";
 import { combineAllBitOr } from "./combineHelper";
 import { IMAGES_OUT_DIR, JSON_OUT_DIR } from "./constants";
 import { genSingleImgUrl } from "./imgHelper";
@@ -86,7 +87,8 @@ export const genResult = async (
   configLayers: ConfigLayer[],
   jsonMapping: JSONMapping,
   width: number,
-  height: number
+  height: number,
+  setPercentProgress: Dispatch<SetStateAction<number>>
 ) => {
   const outputDir = await showDirectoryPicker();
   const imgsHandle = await outputDir.getDirectoryHandle(IMAGES_OUT_DIR, {
@@ -98,7 +100,8 @@ export const genResult = async (
   const urlResults: string[] = [];
   const jsonResults: string[] = [];
   const com2Gen = combinations.filter((c) => c & 1);
-  const padNum = genPadNum(com2Gen.length);
+  const comGenLen = com2Gen.length;
+  const padNum = genPadNum(comGenLen);
   for (const index in com2Gen) {
     const metaName = baseName + index;
     const { url, metadataJson } = await genSingleImgUrl(
@@ -123,6 +126,7 @@ export const genResult = async (
     await writeFile(jsonFile, jsonString);
     urlResults.push(url);
     jsonResults.push(jsonString);
+    setPercentProgress(+((+(index + 1) * 100) / comGenLen).toFixed(2));
   }
   return { urlResults, jsonResults };
 };

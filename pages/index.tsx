@@ -1,4 +1,4 @@
-import { Progress } from "antd";
+import { Button, Col, Input, Progress, Row } from "antd";
 import _ from "lodash";
 import type { NextPage } from "next";
 import Head from "next/head";
@@ -118,9 +118,8 @@ const Home: NextPage = () => {
     if (previewUrl.length > 0) {
       return (
         <>
-          <span>Preview Img</span>
+          <p>Preview Img</p>
           <Image src={previewUrl} alt="" width={300} height={300}></Image>
-          <span>Preview Img</span>
         </>
       );
     }
@@ -153,7 +152,7 @@ const Home: NextPage = () => {
             return (
               <div key={itemIndex}>
                 <Image src={ite.url} alt="" width={50} height={50}></Image>
-                <span
+                <Button
                   onClick={() => {
                     handleSetPreview(lay.folder, ite.bit);
                   }}
@@ -166,7 +165,7 @@ const Home: NextPage = () => {
                       )
                     )}{" "}
                   %
-                </span>
+                </Button>
                 <input
                   type="number"
                   value={amountInfo ? amountInfo[ite.bit] : 0}
@@ -221,70 +220,76 @@ const Home: NextPage = () => {
         <meta name="description" content="Nft generate images metadata" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-
-      <main className={styles.main}>
-        <span>Total suply</span>
-        <input
-          type="number"
-          value={getTotalSupply()}
-          onChange={(e) => {
-            handleAdjustTotalSupply(Number(e.target.value), getTotalSupply());
-          }}
-        />
-        <span>Base name</span>
-        <input
-          type="text"
-          value={baseName}
-          onChange={(e) => {
-            setBaseName(e.target.value);
-          }}
-        />
-        <span>Description</span>
-        <input
-          type="text"
-          value={description}
-          onChange={(e) => {
-            setDescription(e.target.value);
-          }}
-        />
-        <span>Width</span>
-        <input
-          type="number"
-          value={width}
-          onChange={(e) => {
-            setWidth(Number(e.target.value));
-          }}
-        />
-        <span>Height</span>
-        <input
-          type="number"
-          value={height}
-          onChange={(e) => {
-            setHeight(Number(e.target.value));
-          }}
-        />
-        <button onClick={handleGetFolder}>upload</button>
-        <button
-          onClick={handleGenResults}
-          disabled={generating || configLayers.length === 0}
-        >
-          genImg
-        </button>
-        {percentProgress > 0 && (
-          <Progress
-            strokeColor={{
-              "0%": "#108ee9",
-              "100%": "#87d068",
+      <Row>
+        <Col span={12}>
+          <span>Total suply</span>
+          <Input
+            type="number"
+            value={getTotalSupply()}
+            onChange={(e) => {
+              handleAdjustTotalSupply(Number(e.target.value), getTotalSupply());
             }}
-            percent={percentProgress}
           />
-        )}
-        {genPreviewImg()}
-        {genConfigUi()}
-        {results.map((r, i) => (
-          <Image key={i} src={r} alt="" width={300} height={300}></Image>
-        ))}
-      </main>
+          <span>Base name</span>
+          <Input
+            type="text"
+            value={baseName}
+            onChange={(e) => {
+              setBaseName(e.target.value);
+            }}
+          />
+          <span>Description</span>
+          <Input
+            type="text"
+            value={description}
+            onChange={(e) => {
+              setDescription(e.target.value);
+            }}
+          />
+          <span>Width</span>
+          <Input
+            type="number"
+            value={width}
+            onChange={(e) => {
+              setWidth(Number(e.target.value));
+            }}
+          />
+          <span>Height</span>
+          <Input
+            type="number"
+            value={height}
+            onChange={(e) => {
+              setHeight(Number(e.target.value));
+            }}
+          />
+          <Button type="dashed" onClick={handleGetFolder}>
+            Select Layers
+          </Button>
+          <Button
+            type="primary"
+            onClick={handleGenResults}
+            disabled={generating || configLayers.length === 0}
+          >
+            Generate Results
+          </Button>
+          {percentProgress > 0 && (
+            <Progress
+              strokeColor={{
+                "0%": "#108ee9",
+                "100%": "#87d068",
+              }}
+              percent={percentProgress}
+            />
+          )}
+          {genPreviewImg()}
+          <p>Result: </p>
+          {results.map((r, i) => (
+            <Image key={i} src={r} alt="" width={300} height={300}></Image>
+          ))}
+        </Col>
+        <Col span={12}>{genConfigUi()}</Col>
+      </Row>
+      <main className={styles.main}></main>
 
       <footer className={styles.footer}>
         <a

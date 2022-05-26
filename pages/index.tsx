@@ -270,13 +270,15 @@ const Home: NextPage = () => {
         >
           genImg
         </button>
-        <Progress
-          strokeColor={{
-            "0%": "#108ee9",
-            "100%": "#87d068",
-          }}
-          percent={percentProgress}
-        />
+        {percentProgress > 0 && (
+          <Progress
+            strokeColor={{
+              "0%": "#108ee9",
+              "100%": "#87d068",
+            }}
+            percent={percentProgress}
+          />
+        )}
         {genPreviewImg()}
         {genConfigUi()}
         {results.map((r, i) => (

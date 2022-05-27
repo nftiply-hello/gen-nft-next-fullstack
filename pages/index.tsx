@@ -1,3 +1,4 @@
+import { CaretDownOutlined, CaretUpOutlined } from "@ant-design/icons";
 import {
   Avatar,
   Button,
@@ -136,24 +137,23 @@ const Home: NextPage = () => {
   };
   const genExtra = (layLen: number, layIndex: number) => (
     <>
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          changeLayOrder(layIndex, true);
-        }}
-        disabled={layIndex === layLen - 1}
-      >
-        down
-      </button>
-      <button
+      <CaretUpOutlined
         onClick={(e) => {
           e.stopPropagation();
           changeLayOrder(layIndex, false);
         }}
         disabled={layIndex === 0}
-      >
-        up
-      </button>
+        style={{ fontSize: "30px", color: "#08c" }}
+      />
+      <CaretDownOutlined
+        size={30}
+        onClick={(e) => {
+          e.stopPropagation();
+          changeLayOrder(layIndex, true);
+        }}
+        disabled={layIndex === layLen - 1}
+        style={{ fontSize: "30px", color: "#08c" }}
+      />
     </>
   );
   const handleAdjustTotalSupply = (newVal: number, oldVal: number) => {
@@ -257,80 +257,98 @@ const Home: NextPage = () => {
   return (
     <div className={styles.container}>
       <Head>
-        <title>Nft generate images metadata</title>
-        <meta name="description" content="Nft generate images metadata" />
+        <title>Nft metadata generator</title>
+        <meta name="description" content="Come and create your nft metadatas" />
+        <meta property="og:title" content="Nft generator" />
+        <meta
+          property="og:description"
+          content="Come and create your nft metadatas"
+        />
+        {/* <meta property="og:url" content="https://myclothingstore.com/" /> */}
+        <meta property="og:type" content="website" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <Row>
-        <Col span={12}>
-          <span>Total suply</span>
-          <Input
-            type="number"
-            value={getTotalSupply()}
-            onChange={(e) => {
-              handleAdjustTotalSupply(Number(e.target.value), getTotalSupply());
-            }}
-          />
-          <span>Base name</span>
-          <Input
-            type="text"
-            value={baseName}
-            onChange={(e) => {
-              setBaseName(e.target.value);
-            }}
-          />
-          <span>Description</span>
-          <Input
-            type="text"
-            value={description}
-            onChange={(e) => {
-              setDescription(e.target.value);
-            }}
-          />
-          <span>Width</span>
-          <Input
-            type="number"
-            value={width}
-            onChange={(e) => {
-              setWidth(Number(e.target.value));
-            }}
-          />
-          <span>Height</span>
-          <Input
-            type="number"
-            value={height}
-            onChange={(e) => {
-              setHeight(Number(e.target.value));
-            }}
-          />
-          <Button type="dashed" onClick={handleGetFolder}>
-            Select Layers
-          </Button>
-          <Button
-            type="primary"
-            onClick={handleGenResults}
-            disabled={generating || configLayers.length === 0}
-          >
-            Generate Results
-          </Button>
-          {percentProgress > 0 && (
-            <Progress
-              strokeColor={{
-                "0%": "#108ee9",
-                "100%": "#87d068",
+
+      <main className={styles.main}>
+        <h1>THE BEST FREE NFT GENERATOR TOOL</h1>
+
+        <p className={styles.description}>
+          Generate massive numbers of NFT with determined rarity – and it’s
+          FREE!
+        </p>
+        <Row>
+          <Col span={12}>
+            <span>Total suply</span>
+            <Input
+              type="number"
+              value={getTotalSupply()}
+              onChange={(e) => {
+                handleAdjustTotalSupply(
+                  Number(e.target.value),
+                  getTotalSupply()
+                );
               }}
-              percent={percentProgress}
             />
-          )}
-          {genPreviewImg()}
-          <p>Result: </p>
-          {results.map((r, i) => (
-            <Image key={i} src={r} alt="" width={300} height={300}></Image>
-          ))}
-        </Col>
-        <Col span={12}>{genConfigUi()}</Col>
-      </Row>
-      <main className={styles.main}></main>
+            <span>Base name</span>
+            <Input
+              type="text"
+              value={baseName}
+              onChange={(e) => {
+                setBaseName(e.target.value);
+              }}
+            />
+            <span>Description</span>
+            <Input
+              type="text"
+              value={description}
+              onChange={(e) => {
+                setDescription(e.target.value);
+              }}
+            />
+            <span>Width</span>
+            <Input
+              type="number"
+              value={width}
+              onChange={(e) => {
+                setWidth(Number(e.target.value));
+              }}
+            />
+            <span>Height</span>
+            <Input
+              type="number"
+              value={height}
+              onChange={(e) => {
+                setHeight(Number(e.target.value));
+              }}
+            />
+            <Button type="dashed" onClick={handleGetFolder}>
+              Select Layers
+            </Button>
+            <Button
+              type="primary"
+              onClick={handleGenResults}
+              disabled={generating || configLayers.length === 0}
+            >
+              Generate Results
+            </Button>
+            {percentProgress > 0 && (
+              <Progress
+                strokeColor={{
+                  "0%": "#108ee9",
+                  "100%": "#87d068",
+                }}
+                percent={percentProgress}
+              />
+            )}
+            {genPreviewImg()}
+            <p>Result: </p>
+            {results.map((r, i) => (
+              <Image key={i} src={r} alt="" width={300} height={300}></Image>
+            ))}
+          </Col>
+          <Col span={12}>{genConfigUi()}</Col>
+        </Row>
+      </main>
 
       <footer className={styles.footer}>
         <a

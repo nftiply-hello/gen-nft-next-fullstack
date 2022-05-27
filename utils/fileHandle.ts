@@ -88,7 +88,8 @@ export const genResult = async (
   jsonMapping: JSONMapping,
   width: number,
   height: number,
-  setPercentProgress: Dispatch<SetStateAction<number>>
+  setPercentProgress: Dispatch<SetStateAction<number>>,
+  setTextProgress: Dispatch<SetStateAction<string>>
 ) => {
   const outputDir = await showDirectoryPicker();
   const imgsHandle = await outputDir.getDirectoryHandle(IMAGES_OUT_DIR, {
@@ -126,7 +127,9 @@ export const genResult = async (
     await writeFile(jsonFile, jsonString);
     urlResults.push(url);
     jsonResults.push(jsonString);
-    setPercentProgress(+((+(index + 1) * 100) / comGenLen).toFixed(2));
+    const percentShow = +(((+index + 1) * 100) / comGenLen).toFixed(2);
+    setPercentProgress(percentShow);
+    setTextProgress(`${+index + 1}/${comGenLen}`);
   }
   return { urlResults, jsonResults };
 };

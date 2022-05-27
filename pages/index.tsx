@@ -45,6 +45,7 @@ const Home: NextPage = () => {
   const [height, setHeight] = useState<number>(512);
   const [generating, setGenerating] = useState<boolean>(false);
   const [percentProgress, setPercentProgress] = useState<number>(0);
+  const [textProgress, setTextProgress] = useState<string>("");
 
   const handleGenResults = async () => {
     setGenerating(true);
@@ -56,7 +57,8 @@ const Home: NextPage = () => {
       jsonMapping || {},
       width,
       height,
-      setPercentProgress
+      setPercentProgress,
+      setTextProgress
     );
     setResults(urlResults);
     setResultsJson(jsonResults);
@@ -101,7 +103,6 @@ const Home: NextPage = () => {
       }
       newCon[layIndex] = newCon[switchIndex];
       newCon[switchIndex] = store;
-      console.log("newCon", newCon);
       return newCon;
     });
   };
@@ -219,7 +220,7 @@ const Home: NextPage = () => {
                     color="green"
                   >
                     <List.Item.Meta
-                      avatar={<Avatar src={item.url} />}
+                      avatar={<Avatar shape="square" src={item.url} />}
                       title={item.name}
                       description={
                         amountInfo &&
@@ -332,21 +333,26 @@ const Home: NextPage = () => {
               Generate Results
             </Button>
             {percentProgress > 0 && (
-              <Progress
-                strokeColor={{
-                  "0%": "#108ee9",
-                  "100%": "#87d068",
-                }}
-                percent={percentProgress}
-              />
+              <>
+                <Progress
+                  strokeColor={{
+                    "0%": "#108ee9",
+                    "100%": "#87d068",
+                  }}
+                  percent={percentProgress}
+                />
+                <p>{textProgress}</p>
+              </>
             )}
             {genPreviewImg()}
+          </Col>
+          <Col span={12}>{genConfigUi()}</Col>
+          <Col span={24}>
             <p>Result: </p>
             {results.map((r, i) => (
               <Image key={i} src={r} alt="" width={300} height={300}></Image>
             ))}
           </Col>
-          <Col span={12}>{genConfigUi()}</Col>
         </Row>
       </main>
 
